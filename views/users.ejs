@@ -1,0 +1,69 @@
+<div class="container mt-5">
+  <h1 class="text-center">Gestion des utilisateurs</h1>
+  
+  <!-- Formulaire de recherche et de filtrage -->
+  <form action="/admin/users" method="GET" class="mt-4">
+    <div class="form-group">
+      <input type="text" class="form-control" name="search" placeholder="Rechercher un utilisateur" value="<%= search || '' %>">
+    </div>
+    <div class="form-group mt-2">
+      <select class="form-control" name="filter">
+        <option value="all" <%= filter === 'all' ? 'selected' : '' %>>Tous les utilisateurs</option>
+        <option value="admin" <%= filter === 'admin' ? 'selected' : '' %>>Administrateurs</option>
+        <option value="user" <%= filter === 'user' ? 'selected' : '' %>>Utilisateurs</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Rechercher</button>
+  </form>
+
+  <!-- Message de succès après une action -->
+<% if (success) { %>
+  <div class="alert alert-success mt-4">
+    <%= success %>
+  </div>
+<% } %>
+
+
+  <!-- Formulaire d'ajout d'utilisateur -->
+  <h2 class="mt-5">Ajouter un utilisateur</h2>
+  <form action="/admin/users/add" method="POST" class="mt-4">
+    <div class="form-group">
+      <label for="username">Nom d'utilisateur</label>
+      <input type="text" class="form-control" id="username" name="username" required>
+    </div>
+    <div class="form-group">
+      <label for="password">Mot de passe</label>
+      <input type="password" class="form-control" id="password" name="password" required>
+    </div>
+    <div class="form-group form-check">
+      <input type="checkbox" class="form-check-input" id="isAdmin" name="isAdmin">
+      <label class="form-check-label" for="isAdmin">Admin</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Ajouter</button>
+  </form>
+
+  <!-- Liste des utilisateurs -->
+  <h2 class="mt-5">Liste des utilisateurs</h2>
+  <table class="table mt-4">
+    <thead>
+      <tr>
+        <th>Nom d'utilisateur</th>
+        <th>Admin</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% users.forEach(user => { %>
+        <tr>
+          <td><%= user.username %></td>
+          <td><%= user.isAdmin ? 'Oui' : 'Non' %></td>
+          <td>
+            <form action="/admin/users/delete/<%= user._id %>" method="POST" style="display:inline;">
+              <button type="submit" class="btn btn-danger">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

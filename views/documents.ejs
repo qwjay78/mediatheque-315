@@ -1,0 +1,68 @@
+
+<h2 class="text-center">Liste des Documents</h2>
+
+<div class="container mb-4">
+  <form class="d-flex" method="GET" action="/documents">
+    <input class="form-control me-2" type="search" id="search" name="search" placeholder="Rechercher un livre" aria-label="Search" value="<%= search %>">
+    <button class="btn btn-outline-success" type="submit">Rechercher</button>
+  </form>
+  <div id="suggestions" class="list-group mt-2"></div>
+  <div class="btn-group mt-3" role="group" aria-label="Filtres">
+    <a href="/documents?filter=all" class="btn btn-outline-primary <%= filter === 'all' ? 'active' : '' %>">Tous</a>
+    <a href="/documents?filter=available" class="btn btn-outline-primary <%= filter === 'available' ? 'active' : '' %>">Non emprunté</a>
+    <a href="/documents?filter=my" class="btn btn-outline-primary <%= filter === 'my' ? 'active' : '' %>">Mes emprunts</a>
+    <a href="/documents?filter=borrowed" class="btn btn-outline-primary <%= filter === 'borrowed' ? 'active' : '' %>">Déjà emprunté</a>
+  </div>
+</div>
+
+<p class="text-center">Il vous reste <%= remainingBorrows %> livres à emprunter.</p>
+
+<div class="row">
+  <% documents.forEach(doc => { %>
+    <div class="col-md-4 mb-4"> <!-- Colonne pour les écrans moyens et plus -->
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title"><strong>Titre:</strong> <%= doc.fields.titre_avec_lien_vers_le_catalogue %></h5>
+          <p class="card-text"><strong>Auteur:</strong> <%= doc.fields.auteur %></p>
+          <p class="card-text"><strong>Status:</strong> <%= doc.available ? 'Disponible' : 'Emprunté' %></p>
+          <% if (doc.available && remainingBorrows > 0) { %>
+            <form action="/documents/borrow/<%= doc._id %>" method="POST">
+              <button type="submit" class="btn btn-primary">Emprunter</button>
+            </form>
+          <% } else if (doc.borrower === user.username) { %>
+            <form action="/documents/return/<%= doc._id %>" method="POST">
+              <button type="submit" class="btn btn-danger">Retourner</button>
+            </form>
+          <% } else if (remainingBorrows === 0) { %>
+            <p class="text-danger">Vous avez atteint votre limite d'emprunt</p>
+          <% } else { %>
+            <p class="text-danger">Document déjà emprunté</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+</div>
+
+<script>
+  document.getElementById('search').addEventListener('input', function() {
+    const query = this.value;
+    if (query.length > 2) {
+      fetch(`/documents/suggestions?search=${query}`)
+        .then(response => response.json())
+        .then(data => {
+          const suggestions = document.getElementById('suggestions');
+          suggestions.innerHTML = '';
+          data.forEach(item => {
+            const suggestionItem = document.createElement('a');
+            suggestionItem.href = `/documents?search=${item.fields.titre_avec_lien_vers_le_catalogue}`;
+            suggestionItem.classList.add('list-group-item', 'list-group-item-action');
+            suggestionItem.textContent = item.fields.titre_avec_lien_vers_le_catalogue;
+            suggestions.appendChild(suggestionItem);
+          });
+        });
+    } else {
+      document.getElementById('suggestions').innerHTML = '';
+    }
+  });
+</script>

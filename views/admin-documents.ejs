@@ -1,0 +1,64 @@
+<div class="container mt-5">
+  <h1 class="text-center">Gestion des documents</h1>
+  <form action="/admin/documents/add" method="POST" class="mt-4">
+    <div class="form-group">
+      <label for="titre">Titre</label>
+      <input type="text" class="form-control" id="titre" name="titre_avec_lien_vers_le_catalogue" required>
+    </div>
+    <div class="form-group">
+      <label for="auteur">Auteur</label>
+      <input type="text" class="form-control" id="auteur" name="auteur" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Ajouter</button>
+  </form>
+  <form action="/admin/documents" method="GET" class="mt-4">
+    <div class="form-group">
+      <input type="text" class="form-control" name="search" placeholder="Rechercher un document">
+    </div>
+    <div class="form-group mt-2">
+      <select class="form-control" name="filter">
+        <option value="all">Tous les documents</option>
+        <option value="borrowed">Documents empruntés</option>
+        <option value="available">Documents disponibles</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Rechercher</button>
+  </form>
+  <h2 class="mt-5">Liste des documents</h2>
+  <table class="table mt-4">
+    <thead>
+      <tr>
+        <th>Titre</th>
+        <th>Auteur</th>
+        <th>Emprunté par</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% documents.filter(doc => !doc.available).forEach(doc => { %>
+        <tr>
+          <td><%= doc.fields.titre_avec_lien_vers_le_catalogue %></td>
+          <td><%= doc.fields.auteur %></td>
+          <td><%= doc.borrower %></td>
+          <td>
+            <form action="/admin/documents/return/<%= doc._id %>" method="POST" style="display:inline;">
+              <button type="submit" class="btn btn-warning">Annuler l'emprunt</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+      <% documents.filter(doc => doc.available).forEach(doc => { %>
+        <tr>
+          <td><%= doc.fields.titre_avec_lien_vers_le_catalogue %></td>
+          <td><%= doc.fields.auteur %></td>
+          <td>Non emprunté</td>
+          <td>
+            <form action="/admin/documents/delete/<%= doc._id %>" method="POST" style="display:inline;">
+              <button type="submit" class="btn btn-danger">Supprimer</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
