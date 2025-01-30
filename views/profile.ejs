@@ -1,26 +1,134 @@
-
-<div class="container mt-5">
-    <h1 class="text-center">Profil Utilisateur</h1>
-    <h2 class="text-center">Nom d'utilisateur: <%= user.username %></h2>
-    <h3 class="mt-4">Documents Empruntés:</h3>
-    <% if (documents.length > 0) { %>
-        <ul class="list-group mt-3">
-            <% documents.forEach(doc => { %>
-                <li class="list-group-item">
-                    <strong>Titre:</strong> <%= doc.fields.titre_avec_lien_vers_le_catalogue %> <br />
-                    <strong>Auteur:</strong> <%= doc.fields.auteur %> <br />
-                    <form action="/documents/return/<%= doc._id %>" method="POST" class="mt-2">
-                        <button type="submit" class="btn btn-danger">Retourner</button>
-                    </form>
-                </li>
-            <% }) %>
+<style>
+    .profile-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+  
+    .user-card {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+  
+    .user-avatar {
+      width: 100px;
+      height: 100px;
+      background: #4c6ef5;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      color: white;
+      font-size: 2.5rem;
+    }
+  
+    .borrowed-books {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      padding: 2rem;
+    }
+  
+    .book-item {
+      border: none !important;
+      border-radius: 10px !important;
+      margin-bottom: 1rem;
+      background: #f8f9fa !important;
+      transition: transform 0.2s ease;
+    }
+  
+    .book-item:hover {
+      transform: translateY(-2px);
+    }
+  
+    .remaining-count {
+      background: #e3fcef;
+      color: #0ca678;
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: center;
+      margin: 1.5rem 0;
+    }
+  
+    .limit-warning {
+      background: #fff5f5;
+      color: #e03131;
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: center;
+    }
+  
+    .return-btn {
+      background: #ff6b6b;
+      border: none;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+  
+    .return-btn:hover {
+      background: #fa5252;
+      transform: translateY(-1px);
+    }
+  
+    .view-docs-btn {
+      background: #4c6ef5;
+      border: none;
+      border-radius: 8px;
+      padding: 0.8rem 2rem;
+      transition: all 0.3s ease;
+    }
+  
+    .view-docs-btn:hover {
+      background: #364fc7;
+      transform: translateY(-1px);
+    }
+  </style>
+  
+  <div class="profile-container">
+    <div class="user-card">
+      <div class="user-avatar">
+        <%= user.username.charAt(0).toUpperCase() %>
+      </div>
+      <h1 class="h3 mb-3"><%= user.username %></h1>
+      <div class="remaining-count">
+        Il vous reste <%= remainingBorrows %> livres à emprunter
+      </div>
+      <% if (remainingBorrows === 0) { %>
+        <div class="limit-warning">
+          Vous avez atteint la limite de 5 livres empruntés
+        </div>
+      <% } %>
+    </div>
+  
+    <div class="borrowed-books">
+      <h3 class="mb-4">Documents Empruntés</h3>
+      <% if (documents.length > 0) { %>
+        <ul class="list-group">
+          <% documents.forEach(doc => { %>
+            <li class="list-group-item book-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="mb-1"><%= doc.fields.titre_avec_lien_vers_le_catalogue %></h5>
+                  <p class="mb-0 text-muted"><%= doc.fields.auteur %></p>
+                </div>
+                <form action="/documents/return/<%= doc._id %>" method="POST">
+                  <button type="submit" class="btn return-btn">Retourner</button>
+                </form>
+              </div>
+            </li>
+          <% }) %>
         </ul>
-    <% } else { %>
-        <p class="mt-3">Vous n'avez emprunté aucun document.</p>
-    <% } %>
-    <p class="mt-3">Il vous reste <%= remainingBorrows %> livres à emprunter.</p>
-    <% if (remainingBorrows === 0) { %>
-        <p class="text-danger">Vous avez atteint la limite de 5 livres empruntés.</p>
-    <% } %>
-    <a href="/documents" class="btn btn-primary mt-3">Voir les documents</a>
-</div>
+      <% } else { %>
+        <p class="text-center text-muted">Vous n'avez emprunté aucun document.</p>
+      <% } %>
+    </div>
+  
+    <div class="text-center mt-4">
+      <a href="/documents" class="btn view-docs-btn">Voir les documents</a>
+    </div>
+  </div>

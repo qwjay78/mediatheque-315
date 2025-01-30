@@ -18,7 +18,7 @@ app.set('view engine', 'ejs');
 
 // Utiliser express-ejs-layouts
 app.use(expressLayouts);
-app.set('layout', 'layout'); // Nom du fichier de layout sans l'extension .ejs
+app.set('layout', 'layout'); 
 
 // Configuration des sessions
 app.use(session({

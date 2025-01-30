@@ -1,13 +1,104 @@
+<style>
+  .page-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin: 2rem 0;
+    font-size: 2.5rem;
+  }
+  
+  .search-container {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+  }
 
-<h2 class="text-center">Liste des Documents</h2>
+  .custom-input {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+  }
 
-<div class="container mb-4">
+  .filter-buttons .btn {
+    border-radius: 25px;
+    padding: 8px 20px;
+    margin: 0 5px;
+    transition: all 0.3s ease;
+  }
+
+  .filter-buttons .btn.active {
+    background: #4c6ef5;
+    color: white;
+    box-shadow: 0 4px 6px rgba(76,110,245,0.2);
+  }
+
+  .remaining-count {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 10px;
+    color: #2c3e50;
+    font-weight: 500;
+    margin: 2rem 0;
+  }
+
+  .book-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .book-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  }
+
+  .book-card .card-body {
+    padding: 1.5rem;
+  }
+
+  .book-card .card-title {
+    color: #2c3e50;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+
+  .book-status {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+  }
+
+  .status-available {
+    background: #e3fcef;
+    color: #0ca678;
+  }
+
+  .status-borrowed {
+    background: #fff5f5;
+    color: #e03131;
+  }
+
+  .action-button {
+    width: 100%;
+    border-radius: 10px;
+    padding: 10px;
+    transition: all 0.3s ease;
+  }
+</style>
+
+<h2 class="text-center page-title">Liste des Documents</h2>
+
+<div class="container search-container">
   <form class="d-flex" method="GET" action="/documents">
-    <input class="form-control me-2" type="search" id="search" name="search" placeholder="Rechercher un livre" aria-label="Search" value="<%= search %>">
-    <button class="btn btn-outline-success" type="submit">Rechercher</button>
+    <input class="form-control custom-input me-2" type="search" id="search" name="search" placeholder="Rechercher un livre..." value="<%= search %>">
+    <button class="btn btn-primary action-button" type="submit">Rechercher</button>
   </form>
   <div id="suggestions" class="list-group mt-2"></div>
-  <div class="btn-group mt-3" role="group" aria-label="Filtres">
+  <div class="btn-group mt-4 filter-buttons d-flex justify-content-center" role="group">
     <a href="/documents?filter=all" class="btn btn-outline-primary <%= filter === 'all' ? 'active' : '' %>">Tous</a>
     <a href="/documents?filter=available" class="btn btn-outline-primary <%= filter === 'available' ? 'active' : '' %>">Non emprunté</a>
     <a href="/documents?filter=my" class="btn btn-outline-primary <%= filter === 'my' ? 'active' : '' %>">Mes emprunts</a>
@@ -15,28 +106,30 @@
   </div>
 </div>
 
-<p class="text-center">Il vous reste <%= remainingBorrows %> livres à emprunter.</p>
+<p class="text-center remaining-count">Il vous reste <%= remainingBorrows %> livres à emprunter</p>
 
 <div class="row">
   <% documents.forEach(doc => { %>
-    <div class="col-md-4 mb-4"> <!-- Colonne pour les écrans moyens et plus -->
-      <div class="card">
+    <div class="col-md-3 mb-3">
+      <div class="card book-card">
         <div class="card-body">
-          <h5 class="card-title"><strong>Titre:</strong> <%= doc.fields.titre_avec_lien_vers_le_catalogue %></h5>
-          <p class="card-text"><strong>Auteur:</strong> <%= doc.fields.auteur %></p>
-          <p class="card-text"><strong>Status:</strong> <%= doc.available ? 'Disponible' : 'Emprunté' %></p>
+          <h5 class="card-title"><%= doc.fields.titre_avec_lien_vers_le_catalogue %></h5>
+          <p class="card-text"><i class="fas fa-user"></i> <%= doc.fields.auteur %></p>
+          <div class="book-status <%= doc.available ? 'status-available' : 'status-borrowed' %>">
+            <%= doc.available ? 'Disponible' : 'Emprunté' %>
+          </div>
           <% if (doc.available && remainingBorrows > 0) { %>
             <form action="/documents/borrow/<%= doc._id %>" method="POST">
-              <button type="submit" class="btn btn-primary">Emprunter</button>
+              <button type="submit" class="btn btn-primary action-button mt-3">Emprunter</button>
             </form>
           <% } else if (doc.borrower === user.username) { %>
             <form action="/documents/return/<%= doc._id %>" method="POST">
-              <button type="submit" class="btn btn-danger">Retourner</button>
+              <button type="submit" class="btn btn-danger action-button mt-3">Retourner</button>
             </form>
           <% } else if (remainingBorrows === 0) { %>
-            <p class="text-danger">Vous avez atteint votre limite d'emprunt</p>
+            <p class="text-danger mt-3">Vous avez atteint votre limite d'emprunt</p>
           <% } else { %>
-            <p class="text-danger">Document déjà emprunté</p>
+            <p class="text-danger mt-3">Document déjà emprunté</p>
           <% } %>
         </div>
       </div>

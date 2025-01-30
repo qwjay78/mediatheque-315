@@ -1,52 +1,178 @@
-<div class="container mt-5">
-  <h1 class="text-center">Tableau de bord Admin</h1>
-  <div class="row mt-4">
-    <div class="col-md-12">
-      <h2 class="text-center">Gestion des utilisateurs</h2>
+<style>
+  .dashboard-container {
+    background: #f8f9fa;
+    min-height: 100vh;
+    padding: 2rem;
+  }
 
-      <!-- Formulaire d'ajout d'utilisateur -->
-      <form action="/admin/users/add" method="POST" class="mt-4">
-        <div class="form-group">
-          <label for="username">Nom d'utilisateur</label>
-          <input type="text" class="form-control" id="username" name="username" required>
-        </div>
-        <div class="form-group">
-          <label for="password">Mot de passe</label>
-          <input type="password" class="form-control" id="password" name="password" required>
-        </div>
-        <div class="form-group form-check">
-          <input type="checkbox" class="form-check-input" id="isAdmin" name="isAdmin">
-          <label class="form-check-label" for="isAdmin">Admin</label>
-        </div>
-        <button type="submit" class="btn btn-primary">Ajouter</button>
-      </form>
+  .stats-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+    transition: transform 0.2s;
+    margin-bottom: 1rem;
+  }
 
-      <!-- Liste des utilisateurs -->
-      <table class="table mt-4">
-        <thead>
+  .stats-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .stats-number {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #4c6ef5;
+  }
+
+  .stats-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+
+  .user-form-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+    margin-bottom: 2rem;
+  }
+
+  .custom-input {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 0.75rem;
+    transition: all 0.3s;
+  }
+
+  .custom-input:focus {
+    border-color: #4c6ef5;
+    box-shadow: none;
+  }
+
+  .users-table {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+  }
+
+  .users-table th {
+    border-top: none;
+    color: #6c757d;
+    font-weight: 600;
+  }
+
+  .users-table td {
+    vertical-align: middle;
+  }
+
+  .btn-custom {
+    border-radius: 10px;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.3s;
+  }
+
+  .btn-delete {
+    background: #ff6b6b;
+    border: none;
+    color: white;
+  }
+
+  .btn-delete:hover {
+    background: #fa5252;
+    transform: translateY(-2px);
+  }
+</style>
+
+<div class="dashboard-container">
+  <h1 class="mb-4">Tableau de bord Admin</h1>
+
+  <!-- Stats Row -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="stats-card">
+        <div class="stats-number"><%= users.length %></div>
+        <div class="stats-label">Utilisateurs Total</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stats-card">
+        <div class="stats-number"><%= users.filter(u => u.isAdmin).length %></div>
+        <div class="stats-label">Administrateurs</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stats-card">
+        <div class="stats-number"><%= users.filter(u => !u.isAdmin).length %></div>
+        <div class="stats-label">Utilisateurs Standard</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Management Section -->
+  <div class="user-form-card">
+    <h3 class="mb-4">Ajouter un utilisateur</h3>
+    <form action="/admin/users/add" method="POST">
+      <div class="row">
+        <div class="col-md-5">
+          <div class="form-group mb-3">
+            <label class="form-label">Nom d'utilisateur</label>
+            <input type="text" class="form-control custom-input" name="username" required>
+          </div>
+        </div>
+        <div class="col-md-5">
+          <div class="form-group mb-3">
+            <label class="form-label">Mot de passe</label>
+            <input type="password" class="form-control custom-input" name="password" required>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="form-check mt-4">
+            <input type="checkbox" class="form-check-input" id="isAdmin" name="isAdmin">
+            <label class="form-check-label" for="isAdmin">Admin</label>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-custom mt-3">Ajouter</button>
+    </form>
+  </div>
+
+  <!-- Users Table -->
+  <div class="users-table">
+    <h3 class="mb-4">Liste des utilisateurs</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Utilisateur</th>
+          <th>Rôle</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(user => { %>
           <tr>
-            <th>Nom d'utilisateur</th>
-            <th>Admin</th>
-            <th>Actions</th>
+            <td>
+              <strong><%= user.username %></strong>
+            </td>
+            <td>
+              <span class="badge <%= user.isAdmin ? 'bg-primary' : 'bg-secondary' %>">
+                <%= user.isAdmin ? 'Admin' : 'Utilisateur' %>
+              </span>
+            </td>
+            <td>
+              <form action="/admin/users/delete/<%= user._id %>" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-delete btn-custom">Supprimer</button>
+              </form>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          <% users.forEach(user => { %>
-            <tr>
-              <td><%= user.username %></td>
-              <td><%= user.isAdmin ? 'Oui' : 'Non' %></td>
-              <td>
-                <form action="/admin/users/delete/<%= user._id %>" method="POST" style="display:inline;">
-                  <button type="submit" class="btn btn-danger">Supprimer</button>
-                </form>
-              </td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
-    <div class="col-md-12 text-center mt-4">
-      <a href="/admin/documents" class="btn btn-primary">Gestion des documents</a>
-    </div>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="text-end mt-4">
+    <a href="/admin/documents" class="btn btn-primary btn-custom">
+      <i class="fas fa-book me-2"></i>Gestion des documents
+    </a>
   </div>
 </div>
